@@ -9,8 +9,9 @@ from datetime import datetime
 import threading
 import http.server
 import socketserver
+from http.server import BaseHTTPRequestHandler
 
-# 🔹 Імітація веб-сервера, щоб Render дозволив безкоштовний режим
+# 🔹 Простий веб-сервер (щоб Render не засинав)
 def keep_alive():
     PORT = 8080
     Handler = http.server.SimpleHTTPRequestHandler
@@ -20,36 +21,67 @@ def keep_alive():
 threading.Thread(target=keep_alive, daemon=True).start()
 
 # 🔹 НАЛАШТУВАННЯ
-BOT_TOKEN = "8574839052:AAF-DXQhtnXeY3r2Oc8oiz1WiDA1Hru7EPI"
+BOT_TOKEN = "8574839052:AAF-DXQhtnXeY3r2Oc8oiz1WiDA1Hru7EPI"  # <--- СЮДИ ВСТАВ СВІЙ ТОКЕН
 CHAT_ID = "1400522756"
 
 # 🔹 Посилання для моніторингу
 RSS_OR_SEARCH_URLS = [
-    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-lego-%D0%BC%D0%B8%D0%BD%D0%B8%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%BA%D0%B8/",
-    "https://www.olx.ua/uk/list/q-lego%20lord%20of%20rings/?min_id=905594298&reason=observed_search&search%5Border%5D=created_at%3Adesc",
-    "https://www.olx.ua/uk/list/q-lego%20%D0%B2%D0%BB%D0%B0%D1%81%D1%82%D0%B5%D0%BB%D0%B8%D0%BD%20%D0%BA%D0%BE%D0%BB%D0%B5%D1%86/?min_id=905107950&reason=observed_search&search%5Border%5D=relevance%3Adesc",
-    "https://www.olx.ua/uk/list/q-lego%20hobbit/?min_id=905454579&reason=observed_search&search%5Border%5D=relevance%3Adesc",
+    "https://www.olx.ua/uk/list/q-lego%20lord%20of%20rings/?min_id=905847219&reason=observed_search&search%5Border%5D=created_at%3Adesc",
+    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-%D0%BB%D0%B5%D0%B3%D0%BE%20%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%B5%D1%87%D0%BA%D0%B8/?currency=UAH&min_id=905749210&reason=observed_search&search%5Border%5D=relevance%3Adesc",
     "https://www.olx.ua/uk/list/q-lego%20%D1%85%D0%BE%D0%B1%D0%B1%D0%B8%D1%82/?min_id=905454579&reason=observed_search&search%5Border%5D=relevance%3Adesc",
-    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-%D0%BB%D0%B5%D0%B3%D0%BE%20%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%B5%D1%87%D0%BA%D0%B8/?min_id=905640198&reason=observed_search&currency=UAH&search%5Border%5D=relevance%3Adesc",
+    "https://www.olx.ua/uk/list/q-lego%20hobbit/?min_id=905836648&reason=observed_search&search%5Border%5D=relevance%3Adesc",
+    "https://www.olx.ua/uk/list/q-lego%20%D0%B2%D0%BB%D0%B0%D1%81%D1%82%D0%B5%D0%BB%D0%B8%D0%BD%20%D0%BA%D0%BE%D0%BB%D0%B5%D1%86/?min_id=905107950&reason=observed_search&search%5Border%5D=relevance%3Adesc",
+    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-lego%20%D0%BC%D0%B8%D0%BD%D0%B8%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%BA%D0%B8/?min_id=905836648&reason=observed_search"
 ]
 
-# 🔹 Ключові слова
+
 KEYWORDS = [
-    "lego", "legolas", "lord", "rings", "lord of the rings", "hobbit", "the hobbit",
-    "властелин колец", "хоббит", "гоблин", "варг", "тролль", "торин", "гандальф", "гольдум",
-    "гном", "эльф", "средиземье", "бильбо", "фродо", "саурон", "орки",
-    "79010", "79011", "79012"
+    # 🔹 Основні теми
+    "lego", "лего", "legolas", "legolas greenleaf", "гімлі", "gimli", "aragorn",
+    "аргорн", "аргoрн", "аргон", "фродо", "frodo", "сам", "самвайз", "samwise", 
+    "bilbo", "більбо", "bilbo baggins", "gandalf", "гандальф", "sauron", "саурон",
+    "saruman", "саруман", "гоблін", "goblin", "ork", "orc", "орки", "орки мордора",
+    "uruk", "uruk-hai", "урук", "урук-хай", "troll", "тролль", "троль", "balrog",
+    "балрог", "smaug", "смауг", "варг", "варги", "warg", "elrond", "елронд",
+    "arwen", "арвен", "galadriel", "галадріель", "тауріель", "tauriel", "legion",
+    "mordor", "мордoр", "moria", "морія", "shire", "shire bag end", "shire lego",
+    "shire hobbiton", "хоббітон", "богородок", "баг енд",
+
+    # 🔹 Герої і сетові персонажі
+    "thorin", "торін", "oakenshield", "oaken shield", "філі", "кілі", "fili", "kili",
+    "thranduil", "трандуїл", "bard", "бард", "dwalin", "балін", "балі", "balin",
+    "bombur", "бомбур", "beorn", "беорн", "gollum", "гольдум", "гольлум", "gollum lego",
+    "радaгаст", "radagast", "азог", "азог осквернитель", "azog", "azog the defiler",
+    "болг", "bolg", "саурон lego", "eye of sauron", "ока саурона", "башня саурона",
+
+    # 🔹 Назви наборів LEGO
+    "79000", "79001", "79002", "79003", "79004", "79005", "79006", "79007", "79008", "79009",
+    "79010", "79011", "79012", "79013", "79014", "79015", "79016", "79017", "79018", "79019",
+    "79021", "9470", "9471", "9472", "9473", "9474", "9476", "9478", "9479", "9475", "9477", "9476",
+    "10237", "tower of orthanc", "orthanc", "башня ортанк", "ортанк", "10237 башня", 
+    "9469", "9470", "9471", "9472", "9473", "9474", "9475", "9476", "9478", "9479",
+
+    # 🔹 Локації та світи
+    "rivendell", "rivendel", "ривенделл", "ривендел", "lothlorien", "лоріен", "ізенгард",
+    "isen", "isen guard", "isen guard lego", "rohan", "рохан", "гондор", "gondor",
+    "helms deep", "хельмова падь", "minas tirith", "мінас тіріт", "мiнас тіріт",
+    "black gate", "чорні ворота", "barad dur", "барад дур", "барад-дур", "mount doom",
+    "гора приречення", "мт дeум", "дол гулдур", "dol guldur", "долгулдур",
+
+    # 🔹 Загальні фрази
+    "the hobbit lego", "lord of rings lego", "lego hobbit", "lego lord of rings",
+    "лего властелин колец", "лего володар перснів", "лего хоббіт", "lego middle-earth",
+    "lego middle earth", "lego bag end", "lego hobbiton", "lego smaug", "lego troll",
+    "lego orc", "lego elf", "lego dwarves", "lego elves", "lego gnome", "lego wizard", "the hobbit", "lord of rings", "LoTR"
 ]
 
 MIN_PRICE = None
 MAX_PRICE = None
-CHECK_INTERVAL = 60 * 5  # перевірка кожні 5 хвилин
+CHECK_INTERVAL = 60 * 1  # кожну хвилину
 STATE_FILE = "seen.json"
-
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
-
-# 🔹 Завантаження і збереження побачених оголошень
+# 🔹 Функції роботи з файлами
 def load_seen():
     if os.path.exists(STATE_FILE):
         try:
@@ -63,7 +95,7 @@ def save_seen(seen):
     with open(STATE_FILE, "w", encoding="utf-8") as f:
         json.dump(list(seen), f, ensure_ascii=False)
 
-# 🔹 Надсилання повідомлень у Telegram
+# 🔹 Відправка в Telegram
 def send_telegram(text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": text, "disable_web_page_preview": False}
@@ -74,16 +106,22 @@ def send_telegram(text):
         print("Telegram send error:", e)
         return False
 
-# 🔹 Фільтрація оголошень
+# 🔹 Логування в Telegram
+def log_to_telegram(message):
+    send_telegram(f"⚠️ Лог бота:\n{message}")
+
+# 🔹 Команда /status
+def check_status():
+    send_telegram("🤖 Бот активний та працює стабільно!")
+
+# 🔹 Фільтр
 def entry_passes_filters(title, price):
     s = title.lower()
-    if MIN_PRICE is not None and price is not None and price < MIN_PRICE:
+    if MIN_PRICE and price and price < MIN_PRICE:
         return False
-    if MAX_PRICE is not None and price is not None and price > MAX_PRICE:
+    if MAX_PRICE and price and price > MAX_PRICE:
         return False
-    if KEYWORDS:
-        return any(k.lower() in s for k in KEYWORDS)
-    return True
+    return any(k.lower() in s for k in KEYWORDS)
 
 # 🔹 Парсинг RSS
 def try_rss_parse(url):
@@ -125,7 +163,7 @@ def parse_html_search(url):
         unique = {item['id']: item for item in ads if item['id']}
         return list(unique.values())
     except Exception as e:
-        print("HTML parse error:", e)
+        log_to_telegram(f"HTML parse error: {e}")
         return []
 
 # 🔹 Форматування повідомлення
@@ -137,16 +175,12 @@ def format_message(item):
     pub = datetime.now().strftime("%Y-%m-%d %H:%M")
     return f"{t}\n{pr}\n{l}\n{pub}"
 
-# 🔹 Надсилання повідомлення раз на годину
-def send_status_message():
-    send_telegram("🤖 Бот активний, працює стабільно.")
-    threading.Timer(3600, send_status_message).start()
-
 # 🔹 Основна логіка
 def main():
-    send_status_message()  # запускаємо перевірку активності
+    send_telegram("🚀 OLX-бот запущений і працює.")
     seen = load_seen()
     print("🔍 Моніторинг запущено...")
+
     while True:
         try:
             for url in RSS_OR_SEARCH_URLS:
@@ -161,13 +195,13 @@ def main():
                     if uid not in seen:
                         msg = format_message(it)
                         if send_telegram(msg):
-                            print("✅ Відправлено:", it.get("title"))
                             seen.add(uid)
+                            print("✅ Відправлено:", it.get("title"))
                         else:
-                            print("❌ Помилка відправки:", it.get("title"))
+                            log_to_telegram(f"❌ Помилка відправки: {it.get('title')}")
                 save_seen(seen)
         except Exception as e:
-            print("Main loop error:", e)
+            log_to_telegram(f"Main loop error: {e}")
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
