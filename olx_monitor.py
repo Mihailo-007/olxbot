@@ -3,13 +3,17 @@ import feedparser
 import re
 import os
 import json
+import requests
+import feedparser
+import re
+import os
+import json
 import time
 from bs4 import BeautifulSoup
 from datetime import datetime
 import threading
 import http.server
 import socketserver
-from http.server import BaseHTTPRequestHandler
 from telegram.ext import Updater, CommandHandler
 
 # 🔹 Простий веб-сервер (щоб Render не засинав)
@@ -35,6 +39,7 @@ RSS_OR_SEARCH_URLS = [
     "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-lego%20%D0%BC%D0%B8%D0%BD%D0%B8%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%BA%D0%B8/?min_id=905836648&reason=observed_search"
 ]
 
+# 🔹 Ключові слова
 KEYWORDS = [
     "lord of the rings", "the lord of the rings", "lotr", "rings", "ring",
     "hobbit", "the hobbit", "middle-earth", "middle earth", "tolkien",
@@ -44,6 +49,7 @@ KEYWORDS = [
     "rohan", "gondor", "rivendell", "mirkwood", "erebor", "smaug",
     "thorin", "bard", "beorn", "nazgul", "witch-king", "fellowship",
     "isengard", "minas tirith", "helm’s deep", "orthanc", "mount doom",
+
     "володар перснів", "перснів", "персня", "персні", "гобіт", "гобіти",
     "середзем’я", "гандальф", "фродо", "сем", "мирі", "піпін", "арагорн",
     "леголас", "ґімлі", "боромир", "ельронд", "галадріель", "арвен",
@@ -51,6 +57,7 @@ KEYWORDS = [
     "мордор", "шір", "рохан", "гондор", "рівендел", "мирквуд", "еребор",
     "смауг", "торін", "бард", "беорн", "назгул", "король-чаклун", "братство",
     "ізенгард", "мінус тіріт", "гельмів яр", "ортанк", "гора приречення",
+
     "властелин колец", "кольца", "властелин", "хоббит", "средиземье",
     "гэндальф", "фродо", "сам", "мэрри", "пиппин", "арагорн", "леголас",
     "гимли", "боромир", "эльронд", "галадриэль", "арвен", "саруман",
@@ -66,6 +73,7 @@ CHECK_INTERVAL = 60  # кожну хвилину
 STATE_FILE = "seen.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
+# ---------- Вспомогательные функции ----------
 def load_seen():
     if os.path.exists(STATE_FILE):
         try:
@@ -92,14 +100,14 @@ def send_telegram(text):
 def log_to_telegram(message):
     send_telegram(f"⚠️ Лог бота:\n{message}")
 
-# 🔹 Команди Telegram
+# ---------- Telegram-команды ----------
 def check_status(update=None, context=None):
     send_telegram("🤖 Бот активний та працює стабільно!")
 
 def start(update, context):
     update.message.reply_text("👋 Привіт! Бот запущений і моніторить оголошення на OLX.")
 
-# 🔹 Перевірка оголошень
+# ---------- Парсер ----------
 def entry_passes_filters(title, price):
     s = title.lower()
     if MIN_PRICE and price and price < MIN_PRICE:
@@ -159,15 +167,19 @@ def format_message(item):
     pub = datetime.now().strftime("%Y-%m-%d %H:%M")
     return f"{t}\n{pr}\n{l}\n{pub}"
 
-# 🔹 Основна логіка
-def main():
-    send_telegram("🚀 OLX-бот запущений і працює.")
-    seen = load_seen()
+# ---------- Основні процеси ----------
+def run_bot():
     updater = Updater(BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("status", check_status))
     updater.start_polling()
+    updater.idle()
+
+def run_monitor():
+    send_telegram("🚀 OLX-бот запущений і працює.")
+    seen = load_seen()
+    print("🔍 Моніторинг запущено...")
 
     while True:
         try:
@@ -193,4 +205,5 @@ def main():
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
-    main()
+    threading.Thread(target=run_bot, daemon=True).start()
+    run_monitor()
