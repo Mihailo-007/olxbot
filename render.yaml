@@ -2,7 +2,5 @@ services:
   - type: web
     name: olxbot
     env: python
-    region: frankfurt
     plan: free
-    buildCommand: bash render-build.sh
     startCommand: python olx_monitor.py
