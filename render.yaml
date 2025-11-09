@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: olxbot
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python olx_monitor.py"
+    pythonVersion: 3.10.14
