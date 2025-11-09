@@ -2,7 +2,7 @@ services:
   - type: web
     name: olxbot
     env: python
+    region: frankfurt
     plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python olx_monitor.py"
-    pythonVersion: 3.10.14
+    buildCommand: bash render-build.sh
+    startCommand: python olx_monitor.py
