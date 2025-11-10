@@ -64,8 +64,11 @@ def load_seen():
     return set()
 
 def save_seen(seen):
+    # не перезаписывает, а дополняет
+    old_seen = load_seen()
+    updated = old_seen.union(seen)
     with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(list(seen), f, ensure_ascii=False)
+        json.dump(list(updated), f, ensure_ascii=False)
 
 def send_telegram(text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -146,12 +149,13 @@ def format_message(item):
     return f"{t}\n{pr}\n{l}\n{pub}"
 
 async def monitor_loop():
-    send_telegram("🚀 OLX-бот запущений і працює.")
     seen = load_seen()
+    send_telegram("🚀 OLX-бот запущений і працює.")  # теперь только один раз при старте
     print("🔍 Моніторинг запущено...")
 
     while True:
         try:
+            new_seen = set()
             for url in RSS_OR_SEARCH_URLS:
                 print(f"Перевіряю: {url}")
                 items = try_rss_parse(url)
@@ -164,10 +168,12 @@ async def monitor_loop():
                     if uid not in seen:
                         msg = format_message(it)
                         if send_telegram(msg):
-                            seen.add(uid)
+                            new_seen.add(uid)
                             print("✅ Відправлено:", it.get("title"))
                         else:
                             log_to_telegram(f"❌ Помилка відправки: {it.get('title')}")
+            if new_seen:
+                seen.update(new_seen)
                 save_seen(seen)
         except Exception as e:
             log_to_telegram(f"Main loop error: {e}")
