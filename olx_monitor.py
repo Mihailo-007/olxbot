@@ -4,13 +4,13 @@ import re
 import os
 import json
 import time
-from bs4 import BeautifulSoup
-from datetime import datetime
+import asyncio
 import threading
 import http.server
 import socketserver
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from bs4 import BeautifulSoup
+from datetime import datetime
+from telegram.ext import ApplicationBuilder, CommandHandler
 
 # 🔹 Простий веб-сервер (щоб Render не засинав)
 def keep_alive():
@@ -45,7 +45,6 @@ KEYWORDS = [
     "rohan", "gondor", "rivendell", "mirkwood", "erebor", "smaug",
     "thorin", "bard", "beorn", "nazgul", "witch-king", "fellowship",
     "isengard", "minas tirith", "helm’s deep", "orthanc", "mount doom",
-
     "володар перснів", "перснів", "персня", "персні", "гобіт", "гобіти",
     "середзем’я", "гандальф", "фродо", "сем", "мирі", "піпін", "арагорн",
     "леголас", "ґімлі", "боромир", "ельронд", "галадріель", "арвен",
@@ -53,7 +52,6 @@ KEYWORDS = [
     "мордор", "шір", "рохан", "гондор", "рівендел", "мирквуд", "еребор",
     "смауг", "торін", "бард", "беорн", "назгул", "король-чаклун", "братство",
     "ізенгард", "мінус тіріт", "гельмів яр", "ортанк", "гора приречення",
-
     "властелин колец", "кольца", "властелин", "хоббит", "средиземье",
     "гэндальф", "фродо", "сам", "мэрри", "пиппин", "арагорн", "леголас",
     "гимли", "боромир", "эльронд", "галадриэль", "арвен", "саруман",
@@ -68,7 +66,6 @@ MAX_PRICE = None
 CHECK_INTERVAL = 60  # кожну хвилину
 STATE_FILE = "seen.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-
 
 # ---------- Вспомогательные функции ----------
 def load_seen():
@@ -97,14 +94,12 @@ def send_telegram(text):
 def log_to_telegram(message):
     send_telegram(f"⚠️ Лог бота:\n{message}")
 
-
 # ---------- Telegram-команды ----------
-async def check_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🤖 Бот активний та працює стабільно!")
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update, context):
     await update.message.reply_text("👋 Привіт! Бот запущений і моніторить оголошення на OLX.")
 
+async def check_status(update, context):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="🤖 Бот активний та працює стабільно!")
 
 # ---------- Парсер ----------
 def entry_passes_filters(title, price):
@@ -166,9 +161,8 @@ def format_message(item):
     pub = datetime.now().strftime("%Y-%m-%d %H:%M")
     return f"{t}\n{pr}\n{l}\n{pub}"
 
-
 # ---------- Основні процеси ----------
-def run_monitor():
+async def monitor_loop():
     send_telegram("🚀 OLX-бот запущений і працює.")
     seen = load_seen()
     print("🔍 Моніторинг запущено...")
@@ -194,18 +188,15 @@ def run_monitor():
                 save_seen(seen)
         except Exception as e:
             log_to_telegram(f"Main loop error: {e}")
-        time.sleep(CHECK_INTERVAL)
-
+        await asyncio.sleep(CHECK_INTERVAL)
 
 async def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("status", check_status))
 
-    threading.Thread(target=run_monitor, daemon=True).start()
+    asyncio.create_task(monitor_loop())
     await app.run_polling()
 
-
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
