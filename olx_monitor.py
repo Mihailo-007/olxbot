@@ -12,7 +12,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from telegram.ext import ApplicationBuilder, CommandHandler
 
-# 🔹 Простий веб-сервер (щоб Render не засинав)
 def keep_alive():
     PORT = 8080
     Handler = http.server.SimpleHTTPRequestHandler
@@ -21,11 +20,9 @@ def keep_alive():
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
-# 🔹 НАЛАШТУВАННЯ
-BOT_TOKEN = "8574839052:AAF-DXQhtnXeY3r2Oc8oiz1WiDA1Hru7EPI"  # <--- СЮДИ ВСТАВ СВІЙ ТОКЕН
+BOT_TOKEN = "8574839052:AAF-DXQhtnXeY3r2Oc8oiz1WiDA1Hru7EPI"  # <--- вставь сюда свой токен
 CHAT_ID = "1400522756"
 
-# 🔹 Посилання для моніторингу
 RSS_OR_SEARCH_URLS = [
     "https://www.olx.ua/uk/list/q-lego%20lord%20of%20rings/?min_id=905847219&reason=observed_search&search%5Border%5D=created_at%3Adesc",
     "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-%D0%BB%D0%B5%D0%B3%D0%BE%20%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%B5%D1%87%D0%BA%D0%B8/?currency=UAH&min_id=905749210&reason=observed_search&search%5Border%5D=relevance%3Adesc",
@@ -35,7 +32,6 @@ RSS_OR_SEARCH_URLS = [
     "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-lego%20%D0%BC%D0%B8%D0%BD%D0%B8%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%BA%D0%B8/?min_id=905836648&reason=observed_search"
 ]
 
-# 🔹 Ключові слова
 KEYWORDS = [
     "lord of the rings", "the lord of the rings", "lotr", "rings", "ring",
     "hobbit", "the hobbit", "middle-earth", "middle earth", "tolkien",
@@ -45,20 +41,11 @@ KEYWORDS = [
     "rohan", "gondor", "rivendell", "mirkwood", "erebor", "smaug",
     "thorin", "bard", "beorn", "nazgul", "witch-king", "fellowship",
     "isengard", "minas tirith", "helm’s deep", "orthanc", "mount doom",
-    "володар перснів", "перснів", "персня", "персні", "гобіт", "гобіти",
-    "середзем’я", "гандальф", "фродо", "сем", "мирі", "піпін", "арагорн",
+    "володар", "перснів", "гобіт", "гобіти", "гандальф", "фродо", "арагорн",
     "леголас", "ґімлі", "боромир", "ельронд", "галадріель", "арвен",
-    "саруман", "саурон", "голлум", "орк", "орки", "урук-хай", "балрог",
-    "мордор", "шір", "рохан", "гондор", "рівендел", "мирквуд", "еребор",
-    "смауг", "торін", "бард", "беорн", "назгул", "король-чаклун", "братство",
-    "ізенгард", "мінус тіріт", "гельмів яр", "ортанк", "гора приречення",
-    "властелин колец", "кольца", "властелин", "хоббит", "средиземье",
-    "гэндальф", "фродо", "сам", "мэрри", "пиппин", "арагорн", "леголас",
-    "гимли", "боромир", "эльронд", "галадриэль", "арвен", "саруман",
-    "саурон", "голлум", "орки", "урук", "балрог", "мордор", "шир",
-    "рохан", "гондор", "ривенделл", "мглистые горы", "эребор", "смауг",
-    "торин", "бард", "беорн", "назу́л", "чёрный всадник", "братство кольца",
-    "изенгард", "минас тирит", "хельмова падь", "ортанк", "гора судьбы"
+    "саруман", "саурон", "голлум", "орк", "орки", "урук", "балрог",
+    "мордор", "шір", "рохан", "гондор", "рівендел", "еребор", "смауг",
+    "торін", "бард", "беорн", "назгул", "ізенгард", "минас", "тирит"
 ]
 
 MIN_PRICE = None
@@ -67,7 +54,6 @@ CHECK_INTERVAL = 60
 STATE_FILE = "seen.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
-# ---------- Вспомогательные функции ----------
 def load_seen():
     if os.path.exists(STATE_FILE):
         try:
@@ -94,14 +80,12 @@ def send_telegram(text):
 def log_to_telegram(message):
     send_telegram(f"⚠️ Лог бота:\n{message}")
 
-# ---------- Telegram-команды ----------
 async def start(update, context):
     await update.message.reply_text("👋 Привіт! Бот запущений і моніторить оголошення на OLX.")
 
 async def check_status(update, context):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="🤖 Бот активний та працює стабільно!")
 
-# ---------- Парсер ----------
 def entry_passes_filters(title, price):
     s = title.lower()
     if MIN_PRICE and price and price < MIN_PRICE:
@@ -161,7 +145,6 @@ def format_message(item):
     pub = datetime.now().strftime("%Y-%m-%d %H:%M")
     return f"{t}\n{pr}\n{l}\n{pub}"
 
-# ---------- Основні процеси ----------
 async def monitor_loop():
     send_telegram("🚀 OLX-бот запущений і працює.")
     seen = load_seen()
@@ -191,16 +174,13 @@ async def monitor_loop():
         await asyncio.sleep(CHECK_INTERVAL)
 
 async def main():
-    application = ApplicationBuilder().token(BOT_TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("status", check_status))
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("status", check_status))
 
     asyncio.create_task(monitor_loop())
-    await application.initialize()
-    await application.start()
     print("✅ Telegram bot started.")
-    await application.updater.start_polling()
-    await application.run_polling()
+    await app.run_polling()
 
 if __name__ == "__main__":
     asyncio.run(main())
