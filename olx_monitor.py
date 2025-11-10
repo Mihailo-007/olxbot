@@ -54,21 +54,22 @@ CHECK_INTERVAL = 60
 STATE_FILE = "seen.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
+# === JSON зберігання без перезапису ===
 def load_seen():
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
-                return set(json.load(f))
+                data = json.load(f)
+                return set(data) if isinstance(data, list) else set()
         except Exception:
             return set()
     return set()
 
 def save_seen(seen):
-    # не перезаписывает, а дополняет
-    old_seen = load_seen()
-    updated = old_seen.union(seen)
+    existing = load_seen()
+    all_seen = existing.union(seen)
     with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(list(updated), f, ensure_ascii=False)
+        json.dump(list(all_seen), f, ensure_ascii=False)
 
 def send_telegram(text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -149,8 +150,8 @@ def format_message(item):
     return f"{t}\n{pr}\n{l}\n{pub}"
 
 async def monitor_loop():
+    send_telegram("🚀 OLX-бот запущений і працює.")
     seen = load_seen()
-    send_telegram("🚀 OLX-бот запущений і працює.")  # теперь только один раз при старте
     print("🔍 Моніторинг запущено...")
 
     while True:
@@ -173,8 +174,8 @@ async def monitor_loop():
                         else:
                             log_to_telegram(f"❌ Помилка відправки: {it.get('title')}")
             if new_seen:
+                save_seen(new_seen)
                 seen.update(new_seen)
-                save_seen(seen)
         except Exception as e:
             log_to_telegram(f"Main loop error: {e}")
         await asyncio.sleep(CHECK_INTERVAL)
