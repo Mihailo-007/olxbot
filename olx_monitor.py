@@ -63,7 +63,7 @@ KEYWORDS = [
 
 MIN_PRICE = None
 MAX_PRICE = None
-CHECK_INTERVAL = 60  # кожну хвилину
+CHECK_INTERVAL = 60
 STATE_FILE = "seen.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
@@ -191,12 +191,16 @@ async def monitor_loop():
         await asyncio.sleep(CHECK_INTERVAL)
 
 async def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("status", check_status))
+    application = ApplicationBuilder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("status", check_status))
 
     asyncio.create_task(monitor_loop())
-    await app.run_polling()
+    await application.initialize()
+    await application.start()
+    print("✅ Telegram bot started.")
+    await application.updater.start_polling()
+    await application.run_polling()
 
 if __name__ == "__main__":
     asyncio.run(main())
