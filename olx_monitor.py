@@ -20,32 +20,22 @@ def keep_alive():
 
 threading.Thread(target=keep_alive, daemon=True).start()
 
-BOT_TOKEN = "8574839052:AAF-DXQhtnXeY3r2Oc8oiz1WiDA1Hru7EPI"  # <--- вставь сюда свой токен
+BOT_TOKEN = "8574839052:AAF-DXQhtnXeY3r2Oc8oiz1WiDA1Hru7EPI"  # вставь сюда токен
 CHAT_ID = "1400522756"
 
 RSS_OR_SEARCH_URLS = [
-    "https://www.olx.ua/uk/list/q-lego%20lord%20of%20rings/?min_id=905847219&reason=observed_search&search%5Border%5D=created_at%3Adesc",
-    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-%D0%BB%D0%B5%D0%B3%D0%BE%20%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%B5%D1%87%D0%BA%D0%B8/?currency=UAH&min_id=905749210&reason=observed_search&search%5Border%5D=relevance%3Adesc",
-    "https://www.olx.ua/uk/list/q-lego%20%D1%85%D0%BE%D0%B1%D0%B1%D0%B8%D1%82/?min_id=905454579&reason=observed_search&search%5Border%5D=relevance%3Adesc",
-    "https://www.olx.ua/uk/list/q-lego%20hobbit/?min_id=905836648&reason=observed_search&search%5Border%5D=relevance%3Adesc",
-    "https://www.olx.ua/uk/list/q-lego%20%D0%B2%D0%BB%D0%B0%D1%81%D1%82%D0%B5%D0%BB%D0%B8%D0%BD%20%D0%BA%D0%BE%D0%BB%D0%B5%D1%86/?min_id=905107950&reason=observed_search&search%5Border%5D=relevance%3Adesc",
-    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-lego%20%D0%BC%D0%B8%D0%BD%D0%B8%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%BA%D0%B8/?min_id=905836648&reason=observed_search"
+    "https://www.olx.ua/uk/list/q-lego%20lord%20of%20rings/?min_id=905847219",
+    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-lego%20%D1%87%D0%B5%D0%BB%D0%BE%D0%B2%D0%B5%D1%87%D0%BA%D0%B8/",
+    "https://www.olx.ua/uk/list/q-lego%20%D1%85%D0%BE%D0%B1%D0%B1%D0%B8%D1%82/",
+    "https://www.olx.ua/uk/list/q-lego%20hobbit/",
+    "https://www.olx.ua/uk/list/q-lego%20%D0%B2%D0%BB%D0%B0%D1%81%D1%82%D0%B5%D0%BB%D0%B8%D0%BD%20%D0%BA%D0%BE%D0%BB%D0%B5%D1%86/",
+    "https://www.olx.ua/uk/detskiy-mir/igrushki/konstruktory/q-lego%20%D0%BC%D0%B8%D0%BD%D1%96%D1%84%D1%96%D0%B3%D1%83%D1%80%D0%BA%D0%B8/"
 ]
 
 KEYWORDS = [
-    "lord of the rings", "the lord of the rings", "lotr", "rings", "ring",
-    "hobbit", "the hobbit", "middle-earth", "middle earth", "tolkien",
-    "gandalf", "frodo", "sam", "samwise", "merry", "pippin", "aragorn",
-    "legolas", "gimli", "boromir", "elrond", "galadriel", "arwen", "saruman",
-    "sauron", "gollum", "orc", "uruk hai", "balrog", "mordor", "shire",
-    "rohan", "gondor", "rivendell", "mirkwood", "erebor", "smaug",
-    "thorin", "bard", "beorn", "nazgul", "witch-king", "fellowship",
-    "isengard", "minas tirith", "helm’s deep", "orthanc", "mount doom",
-    "володар", "перснів", "гобіт", "гобіти", "гандальф", "фродо", "арагорн",
-    "леголас", "ґімлі", "боромир", "ельронд", "галадріель", "арвен",
-    "саруман", "саурон", "голлум", "орк", "орки", "урук", "балрог",
-    "мордор", "шір", "рохан", "гондор", "рівендел", "еребор", "смауг",
-    "торін", "бард", "беорн", "назгул", "ізенгард", "минас", "тирит"
+    "lord of the rings", "the hobbit", "lotr", "hobbit", "rings", "tolkien",
+    "aragorn", "gandalf", "legolas", "frodo", "sam", "sauron", "saruman",
+    "орки", "гобіт", "володар", "перснів", "смауг", "мордoр"
 ]
 
 MIN_PRICE = None
