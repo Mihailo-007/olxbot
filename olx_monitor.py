@@ -3,18 +3,14 @@ import feedparser
 import re
 import os
 import json
-import requests
-import feedparser
-import re
-import os
-import json
 import time
 from bs4 import BeautifulSoup
 from datetime import datetime
 import threading
 import http.server
 import socketserver
-from telegram.ext import Updater, CommandHandler
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 # 🔹 Простий веб-сервер (щоб Render не засинав)
 def keep_alive():
@@ -73,6 +69,7 @@ CHECK_INTERVAL = 60  # кожну хвилину
 STATE_FILE = "seen.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
+
 # ---------- Вспомогательные функции ----------
 def load_seen():
     if os.path.exists(STATE_FILE):
@@ -100,12 +97,14 @@ def send_telegram(text):
 def log_to_telegram(message):
     send_telegram(f"⚠️ Лог бота:\n{message}")
 
-# ---------- Telegram-команды ----------
-def check_status(update=None, context=None):
-    send_telegram("🤖 Бот активний та працює стабільно!")
 
-def start(update, context):
-    update.message.reply_text("👋 Привіт! Бот запущений і моніторить оголошення на OLX.")
+# ---------- Telegram-команды ----------
+async def check_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🤖 Бот активний та працює стабільно!")
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 Привіт! Бот запущений і моніторить оголошення на OLX.")
+
 
 # ---------- Парсер ----------
 def entry_passes_filters(title, price):
@@ -167,15 +166,8 @@ def format_message(item):
     pub = datetime.now().strftime("%Y-%m-%d %H:%M")
     return f"{t}\n{pr}\n{l}\n{pub}"
 
-# ---------- Основні процеси ----------
-def run_bot():
-    updater = Updater(BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("status", check_status))
-    updater.start_polling()
-    updater.idle()
 
+# ---------- Основні процеси ----------
 def run_monitor():
     send_telegram("🚀 OLX-бот запущений і працює.")
     seen = load_seen()
@@ -204,6 +196,16 @@ def run_monitor():
             log_to_telegram(f"Main loop error: {e}")
         time.sleep(CHECK_INTERVAL)
 
+
+async def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("status", check_status))
+
+    threading.Thread(target=run_monitor, daemon=True).start()
+    await app.run_polling()
+
+
 if __name__ == "__main__":
-    threading.Thread(target=run_bot, daemon=True).start()
-    run_monitor()
+    import asyncio
+    asyncio.run(main())
